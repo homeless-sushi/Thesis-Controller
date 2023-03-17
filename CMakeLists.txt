@@ -11,6 +11,15 @@ project(RtrmController)
 
 #When the project is built, create this executable
 add_executable(RtrmController)
+target_sources(RtrmController
+PRIVATE
+    "src/main.cc"
+    "src/DummyPolicy.cc"
+)
+target_include_directories(RtrmController
+    PRIVATE
+        "include"    
+)
 
 #TODO: Use find_package(); for this, the communication libraries have to be setup 
 #      with a cmake configuration file.
