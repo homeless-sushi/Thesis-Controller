@@ -1,8 +1,11 @@
 #include "ThesisController/DummyPolicy.h"
 
 #include <chrono>
+#include <iostream>
 #include <memory>
 #include <thread>
+
+#include <csignal>
 
 #include "AppRegisterServer/Policy.h"
 
@@ -14,6 +17,14 @@ bool stop = false;
 
 int main()
 {
+    // Stop when Ctrl+C is called
+    std::signal(SIGINT, [](int signal){
+        if (signal == SIGINT) {
+            std::cout << std::endl << "Controller stop" << std::endl;
+            stop = true;
+        }
+    });
+
     std::unique_ptr<Policy::Policy> policy(new Policy::DummyPolicy(N_CORES));
     
     unsigned int i = 0;
