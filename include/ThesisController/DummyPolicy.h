@@ -1,3 +1,4 @@
+#include <optional>
 #include <set>
 
 #include <sys/types.h>
@@ -11,8 +12,10 @@ namespace Policy
         private:
             std::set<pid_t> newRegisteredApps; /**< Apps that have been added this cycle */
             std::set<pid_t> runningApps;       /**< Apps that have been running */
+            
         public:
-            using Policy::Policy;
+            DummyPolicy(unsigned int nCores);
+
             void run(int cycle) override;
     };
 }

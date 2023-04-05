@@ -11,6 +11,12 @@
 
 namespace Policy
 {
+    DummyPolicy::DummyPolicy(unsigned int nCores) : 
+        Policy(nCores)
+    {
+        std::cout << "CYCLE,PID,NAME,TARGET,CURRENT" << std::endl;
+    };
+
     void DummyPolicy::run(int cycle)
     {
         lock();
@@ -27,8 +33,6 @@ namespace Policy
         std::copy(tmp.begin(),tmp.end(), std::inserter(newRegisteredApps, newRegisteredApps.end()));
         unlock();
 
-        std::cout << "Cycle #" << cycle << std::endl;
-
         for(pid_t deregisteredApp : deregisteredApps){
             runningApps.erase(deregisteredApp);
         }
@@ -40,17 +44,26 @@ namespace Policy
             registeredApps[newAppPid]->unlock();
         }
 
-        int i = 0;
         for(pid_t runningAppPid : runningApps) 
         {
             registeredApps[runningAppPid]->lock();
-            std::cout << "\tApp #" << i << ":" << registeredApps[runningAppPid]->descriptor.name << std::endl;
             registeredApps[runningAppPid]->readTicks();
+            long double requestedThroughput = registeredApps[runningAppPid]->data->requested_throughput;
             struct ticks ticks = registeredApps[runningAppPid]->getWindowTicks();
-            long double throughput = getWindowThroughput(ticks);
-            std::cout << "\t\t" << "throughput is: " << throughput << std::endl;
+            long double currThroughput = getWindowThroughput(ticks);
+            
+            std::cout << cycle;
+            std::cout << ",";
+            std::cout << registeredApps[runningAppPid]->descriptor.pid;
+            std::cout << ",";
+            std::cout << registeredApps[runningAppPid]->descriptor.name;
+            std::cout << ",";
+            std::cout << requestedThroughput;
+            std::cout << ",";
+            std::cout << currThroughput;
+            std::cout << std::endl;
+
             registeredApps[runningAppPid]->unlock();
-            i++;
         }
 
         runningApps.insert(newRegisteredApps.begin(), newRegisteredApps.end());

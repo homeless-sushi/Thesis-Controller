@@ -20,13 +20,13 @@ int main()
     // Stop when Ctrl+C is called
     std::signal(SIGINT, [](int signal){
         if (signal == SIGINT) {
-            std::cout << std::endl << "Controller stop" << std::endl;
+            std::cerr << std::endl << "Controller stop" << std::endl;
             stop = true;
         }
     });
 
     std::unique_ptr<Policy::Policy> policy(new Policy::DummyPolicy(N_CORES));
-    
+
     unsigned int i = 0;
     while(!stop){
         policy->run(i);
