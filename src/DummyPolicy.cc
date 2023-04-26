@@ -20,6 +20,7 @@ namespace Policy
     void DummyPolicy::run(int cycle)
     {
         lock();
+
         std::vector<pid_t> deregisteredApps;
         std::vector<pid_t> tmp;
 
@@ -31,7 +32,6 @@ namespace Policy
 
         tmp = registerNewApps();
         std::copy(tmp.begin(),tmp.end(), std::inserter(newRegisteredApps, newRegisteredApps.end()));
-        unlock();
 
         for(pid_t deregisteredApp : deregisteredApps){
             runningApps.erase(deregisteredApp);
@@ -68,5 +68,7 @@ namespace Policy
 
         runningApps.insert(newRegisteredApps.begin(), newRegisteredApps.end());
         newRegisteredApps.clear();
+
+        unlock();
     }
 }
