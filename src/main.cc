@@ -13,17 +13,13 @@
 #define CONTROL_PERIOD 1000
 
 
+void SetupSignals();
+
 bool stop = false;
 
 int main()
 {
-    // Stop when Ctrl+C is called
-    std::signal(SIGINT, [](int signal){
-        if (signal == SIGINT) {
-            std::cerr << std::endl << "Controller stop" << std::endl;
-            stop = true;
-        }
-    });
+    SetupSignals();
 
     std::unique_ptr<Policy::Policy> policy(new Policy::DummyPolicy(N_CORES));
 
@@ -35,4 +31,19 @@ int main()
 
         i++;
     }
+}
+
+void SetupSignals()
+{
+    auto stopController = [](int signal){
+        std::cerr << std::endl;
+        std::cerr << "Received signal: " << signal << std::endl;
+        std::cerr << "Stopping controller" << std::endl;
+
+        stop = true;
+    };
+
+    std::signal(SIGINT, stopController);
+    std::signal(SIGTERM, stopController);
+
 }
