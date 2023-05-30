@@ -7,7 +7,10 @@ import time
 import pandas as pd
 
 # directory where to place all of a runs data
-SCHEDULE_LOG_PATH = "data/"
+PROJECT_DIR = os.path.dirname(os.path.realpath(__file__)) + "/"
+DATA_DIR = "data/"
+SCHEDULES_DIR = "schedules/"
+RESULTS_DIR = ""
 
 # csv field and keywords
 BENCHMARK = 'BENCHMARK'
@@ -23,19 +26,19 @@ TERMINATE = "TERMINATE"
 def setup_arg_parse() :
 
     parser = argparse.ArgumentParser(
-        prog='Benchmark_Scheduler',
+        prog='Benchmark Scheduler',
         description=
             'This program reads a schedule of benchmarks'
             'and runs them according to it;\n'
             'The schedule is a csv, with the following format:\n\n'
             'BENCHMARK,INSTANCE_NAME,START_TIME,INPUT,OUTPUT,THROUGHPUT',
-        usage=f'{sys.argv[0]} schedule_URL'
+        usage=f'{sys.argv[0]} schedule_name'
     )
 
     parser.add_argument(
-        "schedule_URL",
+        "schedule_name",
         type=str,
-        help="the schedule's URL"
+        help="the schedule's name"
     )
 
     return parser
@@ -43,10 +46,9 @@ def setup_arg_parse() :
 def run_benchmark(name, instance_name, in_file, out_file, target_throughput) :
     
     # path names
-    BENCHMARK_PATH = "benchmarks"
-    BUILD_PATH = "build"
-    IN_DIR = "data/in"
-    OUT_DIR = "data/out"
+    BENCHMARK_PATH = f"benchmarks/programs/{name}/BENCHMARK/build/{name}/{name}"
+    BENCHMARK_INPUT_DIR = f"benchmarks/programs/{name}/data/in/"
+    BENCHMARK_OUTPUT_DIR = f"benchmarks/programs/{name}/data/out/"
     
     # command options
     INSTANCE_NAME_OPTION = "--instance-name"
@@ -54,39 +56,33 @@ def run_benchmark(name, instance_name, in_file, out_file, target_throughput) :
     OUTPUT_OPTION = "--output-file"
     THROUGHTPUT_OPTION = "--target-throughput"
 
-    instance_log = open(os.path.abspath(os.path.join(SCHEDULE_LOG_PATH, instance_name+".csv")), 'w')
-
-    program_path = os.path.abspath(os.path.join(BENCHMARK_PATH, name, BUILD_PATH, name+"Benchmark"))
-    process = subprocess.Popen(
-        [program_path,
-        INPUT_OPTION,  os.path.abspath(os.path.join(BENCHMARK_PATH, name, IN_DIR, in_file)), 
-        OUTPUT_OPTION, os.path.abspath(os.path.join(BENCHMARK_PATH, name, OUT_DIR, out_file)),
-        INSTANCE_NAME_OPTION, instance_name,
-        THROUGHTPUT_OPTION, str(target_throughput)],
-        stdout=instance_log
-    )
-
-    instance_log.close()
+    INSTANCE_LOG_URL = PROJECT_DIR + DATA_DIR + RESULTS_DIR + instance_name + ".csv"
+    with open(INSTANCE_LOG_URL, "w") as instance_log_file :
+        process = subprocess.Popen(
+            [
+                PROJECT_DIR + BENCHMARK_PATH,
+                INPUT_OPTION, PROJECT_DIR + BENCHMARK_INPUT_DIR + in_file, 
+                OUTPUT_OPTION, PROJECT_DIR + BENCHMARK_OUTPUT_DIR + out_file,
+                INSTANCE_NAME_OPTION, instance_name,
+                THROUGHTPUT_OPTION, str(target_throughput)
+            ],
+            stdout=instance_log_file
+        )
  
     return process
 
 def run_controller() :
  
     # controller
-    CONTROLLER_PATH = "build/RtrmController"
-    CONTROLLER_LOG = "controller.csv"
-
-    controller_log = open(os.path.abspath(os.path.join(SCHEDULE_LOG_PATH, CONTROLLER_LOG)), 'w')
-    
-    controller_path = os.path.abspath(CONTROLLER_PATH)
-    process = subprocess.Popen(
-        [controller_path],
-        stdin=sys.stdin,
-        stdout=controller_log,
-        stderr=sys.stderr
-    )
-
-    controller_log.close()
+    CONTROLLER_PATH = PROJECT_DIR + "build/RtrmController"
+    CONTROLLER_LOG_PATH = PROJECT_DIR + DATA_DIR + RESULTS_DIR + "controller.csv"
+    with open(CONTROLLER_LOG_PATH, "w") as controller_log_file :
+        process = subprocess.Popen(
+            [CONTROLLER_PATH],
+            stdin=sys.stdin,
+            stdout=controller_log_file,
+            stderr=sys.stderr
+        )
 
     return process
 
@@ -98,12 +94,13 @@ def main() :
 
     # Create a directory with the name of the schedule
     # where to place all of the schedule data
-    global SCHEDULE_LOG_PATH
-    SCHEDULE_LOG_PATH = SCHEDULE_LOG_PATH + (os.path.splitext(os.path.basename(args.schedule_URL))[0])
-    os.makedirs(SCHEDULE_LOG_PATH, exist_ok=True)
+    global RESULTS_DIR
+    RESULTS_DIR = args.schedule_name + "/"
+    os.makedirs(PROJECT_DIR + DATA_DIR + RESULTS_DIR, exist_ok=True)
 
     # Read schedule
-    schedule_df = pd.read_csv(args.schedule_URL)
+    schedule_url = PROJECT_DIR + DATA_DIR + SCHEDULES_DIR + args.schedule_name + ".csv"
+    schedule_df = pd.read_csv(schedule_url)
     schedule_df = schedule_df.sort_values("START_TIME")
 
     # Convert start times to delays from previous events
