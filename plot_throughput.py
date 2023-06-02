@@ -1,3 +1,4 @@
+import argparse
 import sys
 
 import pandas as pd
@@ -5,16 +6,41 @@ import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
+def setup_arg_parse() :
+
+    parser = argparse.ArgumentParser(
+        prog='Plot Throughput',
+        description=
+            'This program reads a controller log, and plots it.\n'
+            'The controller log is a .csv file with the header:\n'
+            'CYCLE,PID,NAME,TARGET,CURRENT',
+        usage=f'{sys.argv[0]} log_in_url out_plot_url'
+    )
+
+    parser.add_argument(
+        "log_in_url",
+        type=str,
+        help="the controller's log's url"
+    )
+
+    parser.add_argument(
+        "out_plot_url",
+        type=str,
+        help="the output plot's url"
+    )
+
+    return parser
+
 def main() :
 
-    if len(sys.argv) < 2 :
-        print(f"Usage: python {sys.argv[0]} LOG_IN_URL OUT_PLOT_URL")
-        raise SystemExit
+    # Setup argument parser and parse 
+    parser = setup_arg_parse()
+    args = parser.parse_args()
     
-    traces = pd.read_csv(sys.argv[1])
+    traces = pd.read_csv(args.log_in_url)
+
     traces["CYCLE"] = traces["CYCLE"] - traces["CYCLE"].min()
     run_last_cycle = traces["CYCLE"].max()
-    
     apps_pids = traces["PID"].unique()
 
     app_traces = []
@@ -35,7 +61,7 @@ def main() :
         first_cycle = app_trace["CYCLE"][0]
         last_cycle = app_trace["CYCLE"][-1]
         start_cycle_pad = [*range(0, first_cycle)]
-        end_cycle_pad = [*range(last_cycle+1, run_last_cycle)]
+        end_cycle_pad = [*range(last_cycle+1, run_last_cycle+1)]
         app_trace["CYCLE"] = start_cycle_pad + app_trace["CYCLE"] + end_cycle_pad
 
         start_throughput_pad = [0] * len(start_cycle_pad)
@@ -46,9 +72,10 @@ def main() :
         end_throughput_pad = [0] * len(end_cycle_pad)
         app_trace["TARGET"] = start_throughput_pad + app_trace["TARGET"] + end_throughput_pad
 
-    tot_ticks = [0] * (last_cycle+1)
-    for app_trace in app_traces :
-        tot_ticks = [tot_ticks[i] + app_trace["CURRENT"][i] for i in range(last_cycle+1)]
+    tot_ticks = [0] * (run_last_cycle+1)
+    for i in range(0, len(tot_ticks)) :
+        for app_trace in app_traces :
+            tot_ticks[i] += app_trace["CURRENT"][i]
 
     fig, ax = plt.subplots()
     ax.set_xlabel('Control Cycles')
@@ -62,19 +89,19 @@ def main() :
             app_trace["CYCLE"], 
             app_trace["TARGET"],
             linestyle= 'dashed',
-            label= app_trace["NAME"] + " " + str(app_trace["PID"]) + " TARGET",
+            label= " ".join([app_trace["NAME"],"TARGET"]),
             color= current_color
         )
     
         ax.plot(
             app_trace["CYCLE"], 
             app_trace["CURRENT"],
-            label= app_trace["NAME"] + " " + str(app_trace["PID"]) + " CURRENT",
+            label= " ".join([app_trace["NAME"],"CURRENT"]),
             color= current_color
         )
 
     ax.plot(
-        range(last_cycle+1), 
+        range(len(tot_ticks)), 
         tot_ticks,
         label= "TOTAL PERFORMANCE",
         color= "k",
@@ -82,7 +109,7 @@ def main() :
     )
 
     ax.legend()
-    plt.savefig(sys.argv[2])
+    plt.savefig(args.out_plot_url)
     plt.show()
     plt.close()
 
