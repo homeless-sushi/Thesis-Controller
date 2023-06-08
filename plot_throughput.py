@@ -108,6 +108,7 @@ def main() :
         alpha=0.5
     )
 
+    ax.set_ylim(bottom=0)
     ax.legend()
     plt.savefig(args.out_plot_url)
     plt.show()
