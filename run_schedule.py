@@ -4,6 +4,7 @@ import subprocess
 import sys
 import time
 
+import numpy
 import pandas as pd
 
 # directory where to place all of a runs data
@@ -19,6 +20,7 @@ START_TIME = 'START_TIME'
 INPUT = 'INPUT'
 OUTPUT = 'OUTPUT'
 THROUGHPUT = 'THROUGHPUT'
+APPEND = 'APPEND'
 
 CONTROLLER_NAME = "CONTROLLER"
 TERMINATE = "TERMINATE"
@@ -31,7 +33,7 @@ def setup_arg_parse() :
             'This program reads a schedule of benchmarks'
             'and runs them according to it;\n'
             'The schedule is a csv, with the following format:\n\n'
-            'BENCHMARK,INSTANCE_NAME,START_TIME,INPUT,OUTPUT,THROUGHPUT',
+            'BENCHMARK,INSTANCE_NAME,START_TIME,INPUT,OUTPUT,THROUGHPUT,APPEND',
         usage=f'{sys.argv[0]} schedule_name'
     )
 
@@ -43,7 +45,7 @@ def setup_arg_parse() :
 
     return parser
 
-def run_benchmark(name, instance_name, in_file, out_file, target_throughput) :
+def run_benchmark(name, instance_name, in_file, out_file, target_throughput, append) :
     
     # path names
     BENCHMARK_PATH = f"benchmarks/programs/{name}/BENCHMARK/build/{name}/{name}"
@@ -58,14 +60,19 @@ def run_benchmark(name, instance_name, in_file, out_file, target_throughput) :
 
     INSTANCE_LOG_URL = PROJECT_DIR + DATA_DIR + RESULTS_DIR + instance_name + ".csv"
     with open(INSTANCE_LOG_URL, "w") as instance_log_file :
+        command = [
+            PROJECT_DIR + BENCHMARK_PATH,
+            INPUT_OPTION, PROJECT_DIR + BENCHMARK_INPUT_DIR + in_file, 
+            OUTPUT_OPTION, PROJECT_DIR + BENCHMARK_OUTPUT_DIR + out_file,
+            INSTANCE_NAME_OPTION, instance_name,
+            THROUGHTPUT_OPTION, str(target_throughput)
+        ]
+    
+        if not (isinstance(append, float) and numpy.isnan(append)) :
+            command = command + str(append).split(" ")
+
         process = subprocess.Popen(
-            [
-                PROJECT_DIR + BENCHMARK_PATH,
-                INPUT_OPTION, PROJECT_DIR + BENCHMARK_INPUT_DIR + in_file, 
-                OUTPUT_OPTION, PROJECT_DIR + BENCHMARK_OUTPUT_DIR + out_file,
-                INSTANCE_NAME_OPTION, instance_name,
-                THROUGHTPUT_OPTION, str(target_throughput)
-            ],
+            command,
             stdout=instance_log_file
         )
  
@@ -129,7 +136,8 @@ def main() :
                 row[INSTANCE_NAME],
                 row[INPUT],
                 row[OUTPUT],
-                row[THROUGHPUT]
+                row[THROUGHPUT],
+                row[APPEND]
             )
 
     # Wait for the controller to terminate
