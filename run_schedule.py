@@ -106,7 +106,7 @@ def main() :
     os.makedirs(PROJECT_DIR + DATA_DIR + RESULTS_DIR, exist_ok=True)
 
     # Read schedule
-    schedule_url = PROJECT_DIR + DATA_DIR + SCHEDULES_DIR + args.schedule_name + ".csv"
+    schedule_url = PROJECT_DIR + SCHEDULES_DIR + args.schedule_name + ".csv"
     schedule_df = pd.read_csv(schedule_url)
     schedule_df = schedule_df.sort_values("START_TIME")
 
