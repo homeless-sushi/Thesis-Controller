@@ -24,12 +24,12 @@ def main() :
 
             SCHEDULE_NAME = f"dummy_{t1}_{t2}"
             os.system(
-                f"sudo python "
+                f"sudo python3.8 "
                 f"{RUN_SCHEDULE_URL} {SCHEDULES_SUBDIR}/{SCHEDULE_NAME}"
             )
-            os.system(f"sudo chown -R vivian {DATA_DIR}")
+            os.system(f"sudo chown -R miele {DATA_DIR}")
             os.system(
-                f"python "
+                f"sudo python3.8 "
                 f"{PLOT_THROUGHPUT_URL} "
                 f"{DATA_DIR}/{SCHEDULES_SUBDIR}/{SCHEDULE_NAME}/controller.csv "
                 f"{DATA_DIR}/{SCHEDULES_SUBDIR}/{SCHEDULE_NAME}/throughput_plot.png"
@@ -39,12 +39,12 @@ def main() :
     
         SCHEDULE_NAME = f"dummy_{t}"
         os.system(
-            f"sudo python "
+            f"sudo python3.8 "
             f"{RUN_SCHEDULE_URL} {SCHEDULES_SUBDIR}/{SCHEDULE_NAME}"
         )
-        os.system(f"sudo chown -R vivian {DATA_DIR}")
+        os.system(f"sudo chown -R miele {DATA_DIR}")
         os.system(
-            f"python "
+            f"sudo python3.8 "
             f"{PLOT_THROUGHPUT_URL} "
             f"{DATA_DIR}/{SCHEDULES_SUBDIR}/{SCHEDULE_NAME}/controller.csv "
             f"{DATA_DIR}/{SCHEDULES_SUBDIR}/{SCHEDULE_NAME}/throughput_plot.png"

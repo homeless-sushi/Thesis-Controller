@@ -9,7 +9,7 @@
 
 #include "AppRegisterServer/Policy.h"
 
-#define N_CORES 16
+#define N_CORES 4
 #define CONTROL_PERIOD 1000
 
 
