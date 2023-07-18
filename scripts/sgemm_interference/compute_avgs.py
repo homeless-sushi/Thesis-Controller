@@ -20,6 +20,7 @@ def main() :
     solo = []
     for n, p, _ in data :
         df = pd.read_csv(os.path.join(IN_DATA_DIR,f"sgemm_{n}/controller.csv"))
+        df = df[df["CURRENT"] != 0]
         average = df["CURRENT"].mean()
         solo.append((p, average))
 
@@ -39,6 +40,7 @@ def main() :
             if n1 == n2 :
                 instance_name = "FIRST"
 
+            df = df[df["CURRENT"] != 0]
             average = df[df["NAME"] == instance_name]["CURRENT"].mean()
             interference.append((p1,p2,average))
 
