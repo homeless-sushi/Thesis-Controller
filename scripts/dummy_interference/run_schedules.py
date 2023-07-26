@@ -9,7 +9,7 @@ RUN_SCHEDULE_URL = os.path.join(PROJECT_DIR, "run_schedule.py")
 PLOT_THROUGHPUT_URL = os.path.join(PROJECT_DIR, "scripts/plot_throughput.py")
 DATA_DIR = os.path.join(PROJECT_DIR, "data")
 
-SCHEDULES_SUBDIR = "interference"
+SCHEDULES_SUBDIR = "dummy_interference"
 
 def main() :
 

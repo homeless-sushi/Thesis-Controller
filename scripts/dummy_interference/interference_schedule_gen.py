@@ -5,7 +5,7 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 T_URL = os.path.join(SCRIPT_DIR,"t.csv")
 
 PROJECT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR,"../../"))
-OUT_DIR = os.path.join(PROJECT_DIR,"schedules/interference/")
+OUT_DIR = os.path.join(PROJECT_DIR,"schedules/dummy_interference/")
 
 def main() :
 
