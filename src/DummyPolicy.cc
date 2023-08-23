@@ -4,10 +4,12 @@
 #include <iterator>
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "AppRegisterServer/App.h"
 #include "AppRegisterServer/AppData.h"
 #include "AppRegisterServer/Policy.h"
+#include "AppRegisterServer/CGroupUtils.h"
 
 namespace Policy
 {
@@ -37,10 +39,13 @@ namespace Policy
             runningApps.erase(deregisteredApp);
         }
 
+        int currentCpu = 0;
         for(auto newAppPid : newRegisteredApps){
             registeredApps[newAppPid]->lock();
             AppData::setRegistered(registeredApps[newAppPid]->data, true);
             AppData::setUseGpu(registeredApps[newAppPid]->data, true);
+            CGroupUtils::UpdateCpuSet(newAppPid, std::vector<int>{currentCpu});
+            currentCpu = (++currentCpu)%nCores;
             registeredApps[newAppPid]->unlock();
         }
 
