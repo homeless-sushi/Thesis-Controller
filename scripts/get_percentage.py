@@ -6,21 +6,25 @@ import matplotlib.pyplot as plt
 
 # csv field and keywords
 ## fields
-PHASE = 'PHASE'
-DEVICE = 'DEVICE'
-DURATION = 'DURATION'
+PHASE = "PHASE"
+DEVICE = "DEVICE"
+DURATION = "DURATION"
 ## phases
-LOOP = 'LOOP'
+LOOP = "LOOP"
 SETUP = "SETUP"
 WAIT_REGISTRATION = "WAIT REGISTRATION"
 CONTROLLER_PULL = "CONTROLLER PULL"
 MARGOT_PULL = "MARGOT PULL"
 WIND_UP = "WIND UP"
-KERNEL = 'KERNEL'
+UPLOAD = "UPLOAD"
+KERNEL = "KERNEL"
+DOWNLOAD = "DOWNLOAD"
 WIND_DOWN = "WIND DOWN"
 CONTROLLER_PUSH = "CONTROLLER PUSH"
 MARGOT_PUSH = "MARGOT PUSH"
-KERNEL = 'KERNEL'
+## devices
+CPU = "CPU"
+GPU = "GPU"
 
 
 ## computed
@@ -72,7 +76,9 @@ def main() :
     CONTROLLER_PULL_tot = detail_df[detail_df[PHASE] == CONTROLLER_PULL][DURATION].sum()
     MARGOT_PULL_tot = detail_df[detail_df[PHASE] == MARGOT_PULL][DURATION].sum()
     WIND_UP_tot = detail_df[detail_df[PHASE] == WIND_UP][DURATION].sum()
-    KERNEL_tot = detail_df[detail_df[PHASE] == KERNEL][DURATION].sum()
+    UPLOAD_tot = detail_df[detail_df[PHASE] == UPLOAD][DURATION].sum()
+    KERNEL_GPU_tot = detail_df[(detail_df[PHASE] == KERNEL) & (detail_df[DEVICE] == GPU)][DURATION].sum()
+    DOWNLOAD_tot = detail_df[detail_df[PHASE] == DOWNLOAD][DURATION].sum()
     WIND_DOWN_tot = detail_df[detail_df[PHASE] == WIND_DOWN][DURATION].sum()
     CONTROLLER_PUSH_tot = detail_df[detail_df[PHASE] == CONTROLLER_PUSH][DURATION].sum()
     MARGOT_PUSH_tot = detail_df[detail_df[PHASE] == MARGOT_PUSH][DURATION].sum()
@@ -82,13 +88,16 @@ def main() :
 
     # Number of loops
     n_loops = len(detail_df[detail_df[PHASE] == LOOP])
-
+    n_loops_gpu = len(detail_df[(detail_df[PHASE] == KERNEL) & (detail_df[DEVICE] == GPU)])
+    
     # Mean times
     LOOP_avg = LOOP_tot / n_loops
     CONTROLLER_PULL_avg = CONTROLLER_PULL_tot / n_loops
     MARGOT_PULL_avg = MARGOT_PULL_tot / n_loops
     WIND_UP_avg = WIND_UP_tot / n_loops
-    KERNEL_avg = KERNEL_tot / n_loops
+    UPLOAD_avg = UPLOAD_tot / n_loops_gpu
+    KERNEL_GPU_avg = 0 if n_loops_gpu == 0 else KERNEL_GPU_tot / n_loops_gpu
+    DOWNLOAD_avg = DOWNLOAD_tot / n_loops_gpu
     WIND_DOWN_avg = WIND_DOWN_tot / n_loops
     CONTROLLER_PUSH_avg = CONTROLLER_PUSH_tot / n_loops
     MARGOT_PUSH_avg = MARGOT_PUSH_tot / n_loops
@@ -103,7 +112,9 @@ def main() :
         output_file.write(f"{CONTROLLER_PULL},{CONTROLLER_PULL_avg:.5f},{CONTROLLER_PULL_tot:.5f},{CONTROLLER_PULL_avg/LOOP_avg*100:.3f}\n")
         output_file.write(f"{MARGOT_PULL},{MARGOT_PULL_avg:.5f},{MARGOT_PULL_tot:.5f},{MARGOT_PULL_avg/LOOP_avg*100:.3f}\n")
         output_file.write(f"{WIND_UP},{WIND_UP_avg:.5f},{WIND_UP_tot:.5f},{WIND_UP_avg/LOOP_avg*100:.3f}\n")
-        output_file.write(f"{KERNEL},{KERNEL_avg:.5f},{KERNEL_tot:.5f},{KERNEL_avg/LOOP_avg*100:.3f}\n")
+        output_file.write(f"{UPLOAD},{UPLOAD_avg:.5f},{UPLOAD_tot:.5f},{UPLOAD_avg/LOOP_avg*100:.3f}\n")
+        output_file.write(f"{KERNEL}_{GPU},{KERNEL_GPU_avg:.5f},{KERNEL_GPU_tot:.5f},{KERNEL_GPU_avg/LOOP_avg*100:.3f}\n")
+        output_file.write(f"{DOWNLOAD},{DOWNLOAD_avg:.5f},{DOWNLOAD_tot:.5f},{DOWNLOAD_avg/LOOP_avg*100:.3f}\n")
         output_file.write(f"{WIND_DOWN},{WIND_DOWN_avg:.5f},{WIND_DOWN_tot:.5f},{WIND_DOWN_avg/LOOP_avg*100:.3f}\n")
         output_file.write(f"{CONTROLLER_PUSH},{CONTROLLER_PUSH_avg:.5f},{CONTROLLER_PUSH_tot:.5f},{CONTROLLER_PUSH_avg/LOOP_avg*100:.3f}\n")
         output_file.write(f"{MARGOT_PUSH},{MARGOT_PUSH_avg:.5f},{MARGOT_PUSH_tot:.5f},{MARGOT_PUSH_avg/LOOP_avg*100:.3f}\n")
@@ -117,9 +128,6 @@ def main() :
         margot_overheads_tot = MARGOT_PULL_tot + MARGOT_PUSH_tot
         margot_overheads_avg = MARGOT_PULL_avg + MARGOT_PUSH_avg
         output_file.write(f"MARGOT_OVERHEADS,{margot_overheads_avg:.5f},{margot_overheads_tot:.5f},{margot_overheads_avg/LOOP_avg*100:.3f}\n")
-        algorithm_tot = WIND_UP_tot + KERNEL_tot + WIND_DOWN_tot
-        algorithm_avg = WIND_UP_avg + KERNEL_avg + WIND_DOWN_avg
-        output_file.write(f"ALGORITHM,{algorithm_avg:.5f},{algorithm_tot:.5f},{algorithm_avg/LOOP_avg*100:.3f}\n")
 
 if __name__ == "__main__" :
     main()
