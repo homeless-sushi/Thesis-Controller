@@ -12,6 +12,7 @@ project(RtrmController)
 #When the project is built, create this executable
 add_executable(RtrmController
         "src/main.cc"
+        "src/SensingPolicy.cc"
         "src/DummyPolicy.cc"
 )
 target_include_directories(RtrmController
