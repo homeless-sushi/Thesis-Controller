@@ -1,8 +1,10 @@
 #include "ThesisController/DummyPolicy.h"
+#include "ThesisController/SensingPolicy.h"
 
 #include <chrono>
 #include <iostream>
 #include <memory>
+#include <string>
 #include <thread>
 
 #include <csignal>
@@ -21,7 +23,12 @@ int main()
 {
     SetupSignals();
 
-    std::unique_ptr<Policy::Policy> policy(new Policy::DummyPolicy(N_CORES));
+    //std::unique_ptr<Policy::Policy> policy(new Policy::DummyPolicy(N_CORES));
+    std::unique_ptr<Policy::Policy> policy(new Policy::SensingPolicy(
+        N_CORES,
+        20,
+        std::string("/home/miele/Vivian/Thesis/Thesis-Controller/data/power/sha_1/power.csv")
+    ));
 
     unsigned int i = 0;
     while(!stop){
