@@ -81,7 +81,7 @@ def run_benchmark(name, instance_name, in_file, out_file, target_throughput, app
 def run_controller() :
  
     # controller
-    CONTROLLER_PATH = PROJECT_DIR + "build/RtrmController"
+    CONTROLLER_PATH = PROJECT_DIR + "controller/build/RtrmController"
     CONTROLLER_LOG_PATH = PROJECT_DIR + DATA_DIR + RESULTS_DIR + "controller.csv"
     with open(CONTROLLER_LOG_PATH, "w") as controller_log_file :
         process = subprocess.Popen(
