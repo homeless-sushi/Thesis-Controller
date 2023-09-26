@@ -1,4 +1,4 @@
-#include "ThesisController/DummyPolicy.h"
+#include "ThesisController/ExamplePolicy.h"
 
 #include <iostream>
 #include <iterator>
@@ -13,13 +13,13 @@
 
 namespace Policy
 {
-    DummyPolicy::DummyPolicy(unsigned int nCores) : 
+    ExamplePolicy::ExamplePolicy(unsigned int nCores) : 
         Policy(nCores)
     {
         std::cout << "CYCLE,PID,NAME,TARGET,CURRENT" << std::endl;
     };
 
-    void DummyPolicy::run(int cycle)
+    void ExamplePolicy::run(int cycle)
     {
         lock();
 
@@ -43,7 +43,6 @@ namespace Policy
         for(auto newAppPid : newRegisteredApps){
             registeredApps[newAppPid]->lock();
             AppData::setRegistered(registeredApps[newAppPid]->data, true);
-            AppData::setUseGpu(registeredApps[newAppPid]->data, true);
             CGroupUtils::UpdateCpuSet(newAppPid, std::vector<int>{currentCpu});
             currentCpu = (++currentCpu)%nCores;
             registeredApps[newAppPid]->unlock();

@@ -1,4 +1,4 @@
-#include "ThesisController/DummyPolicy.h"
+#include "ThesisController/ExamplePolicy.h"
 
 #include <chrono>
 #include <iostream>
@@ -21,7 +21,7 @@ int main()
 {
     SetupSignals();
 
-    std::unique_ptr<Policy::Policy> policy(new Policy::DummyPolicy(N_CORES));
+    std::unique_ptr<Policy::Policy> policy(new Policy::ExamplePolicy(N_CORES));
 
     unsigned int i = 0;
     while(!stop){
