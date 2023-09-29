@@ -5,6 +5,7 @@ add_library(CONTROLLER_Policies_LIB)
 target_sources(CONTROLLER_Policies_LIB
     PRIVATE
         "src/ExamplePolicy.cc"
+        "src/GpuInterferencePolicy.cc"
 )
 
 # Add to the include path
