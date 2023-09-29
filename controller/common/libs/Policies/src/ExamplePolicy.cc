@@ -1,9 +1,11 @@
-#include "ThesisController/ExamplePolicy.h"
+#include "Policies/ExamplePolicy.h"
 
+#include <fstream>
 #include <iostream>
 #include <iterator>
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "AppRegisterServer/App.h"
@@ -13,10 +15,14 @@
 
 namespace Policy
 {
-    ExamplePolicy::ExamplePolicy(unsigned int nCores) : 
-        Policy(nCores)
+    ExamplePolicy::ExamplePolicy(
+        unsigned int nCores,
+        std::string controllerLogUrl
+    ) : 
+        Policy(nCores),
+        controllerLogFile(controllerLogUrl, controllerLogFile.out)
     {
-        std::cout << "CYCLE,PID,NAME,TARGET,CURRENT" << std::endl;
+        controllerLogFile << "CYCLE,PID,NAME,TARGET,CURRENT" << std::endl;
     };
 
     void ExamplePolicy::run(int cycle)
@@ -56,16 +62,11 @@ namespace Policy
             struct ticks ticks = registeredApps[runningAppPid]->getWindowTicks();
             long double currThroughput = getWindowThroughput(ticks);
             
-            std::cout << cycle;
-            std::cout << ",";
-            std::cout << registeredApps[runningAppPid]->descriptor.pid;
-            std::cout << ",";
-            std::cout << registeredApps[runningAppPid]->descriptor.name;
-            std::cout << ",";
-            std::cout << requestedThroughput;
-            std::cout << ",";
-            std::cout << currThroughput;
-            std::cout << std::endl;
+            controllerLogFile << cycle << ","
+                << registeredApps[runningAppPid]->descriptor.pid << ","
+                << registeredApps[runningAppPid]->descriptor.name << ","
+                << requestedThroughput << ","
+                << currThroughput << std::endl;
 
             registeredApps[runningAppPid]->unlock();
         }

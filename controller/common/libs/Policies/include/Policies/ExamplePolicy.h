@@ -1,5 +1,6 @@
-#include <optional>
+#include <fstream>
 #include <set>
+#include <string>
 
 #include <sys/types.h>
 
@@ -13,8 +14,13 @@ namespace Policy
             std::set<pid_t> newRegisteredApps; /**< Apps that have been added this cycle */
             std::set<pid_t> runningApps;       /**< Apps that have been running */
             
+            std::fstream controllerLogFile;
+            
         public:
-            ExamplePolicy(unsigned int nCores);
+            ExamplePolicy(
+                unsigned int nCores,
+                std::string controllerLogUrl
+            );
 
             void run(int cycle) override;
     };

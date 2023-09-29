@@ -7,23 +7,17 @@ if(${CMAKE_VERSION} VERSION_LESS 3.12)
 endif()
 
 #Project name
-project(RtrmController)
+project(RtrmControllers)
 
-#When the project is built, create this executable
-add_executable(RtrmController
-        "src/main.cc"
-        "src/ExamplePolicy.cc"
-        "src/SensingPolicy.cc"
-)
-target_include_directories(RtrmController
-    PRIVATE
-        "include"
-)
+# Find Boost Libraries
+set(BOOST_ROOT $ENV{BOOST_DIR})
+find_package(Boost REQUIRED
+    COMPONENTS program_options)
 
-#TODO: Use find_package(); for this, the communication libraries have to be setup 
-#      with a cmake configuration file.
-#
-set(RtrmCommunication_DIR "/home/miele/Vivian/Thesis/Thesis-Communication")
-add_subdirectory(${RtrmCommunication_DIR} "${RtrmCommunication_DIR}/build")
-target_link_libraries(RtrmController PUBLIC AppRegister_Common_Lib)
-target_link_libraries(RtrmController PUBLIC AppRegister_Server_Lib)
+# Run the CMake of these subdirectories
+add_subdirectory("controllers")
+add_subdirectory("common")
+
+# Add Runtime Manager Communication Directory
+set(RTRM_COMM_DIR "$ENV{RTRM_COMM_DIR}")
+add_subdirectory(${RTRM_COMM_DIR} "communication/build")
