@@ -15,6 +15,7 @@ RESULTS_DIR = ""
 
 # csv field and keywords
 BENCHMARK = 'BENCHMARK'
+TYPE = "TYPE"
 INSTANCE_NAME = 'INSTANCE_NAME'
 START_TIME = 'START_TIME'
 INPUT = 'INPUT'
@@ -45,10 +46,10 @@ def setup_arg_parse() :
 
     return parser
 
-def run_benchmark(name, instance_name, in_file, out_file, target_throughput, append) :
+def run_benchmark(name, type, instance_name, in_file, out_file, target_throughput, append) :
     
     # path names
-    BENCHMARK_PATH = f"benchmarks/programs/{name}/BENCHMARK/build/{name}/{name}"
+    BENCHMARK_PATH = f"benchmarks/programs/{name}/{type}/build/{name}/{name}"
     BENCHMARK_INPUT_DIR = f"benchmarks/programs/{name}/data/in/"
     BENCHMARK_OUTPUT_DIR = f"benchmarks/programs/{name}/data/out/"
     
@@ -78,18 +79,21 @@ def run_benchmark(name, instance_name, in_file, out_file, target_throughput, app
  
     return process
 
-def run_controller() :
- 
+def run_controller(controller_type, append) :
+
     # controller
-    CONTROLLER_PATH = PROJECT_DIR + "controller/build/RtrmController"
-    CONTROLLER_LOG_PATH = PROJECT_DIR + DATA_DIR + RESULTS_DIR + "controller.csv"
-    with open(CONTROLLER_LOG_PATH, "w") as controller_log_file :
-        process = subprocess.Popen(
-            [CONTROLLER_PATH],
-            stdin=sys.stdin,
-            stdout=controller_log_file,
-            stderr=sys.stderr
-        )
+    CONTROLLER_PATH = PROJECT_DIR + f"controller/build/controllers/{controller_type}/RtrmController"
+
+    if not isinstance(append, str):
+        append = str(append)
+    command = [CONTROLLER_PATH] + append.split(" ")
+
+    process = subprocess.Popen(
+        command,
+        stdin=sys.stdin,
+        stdout=sys.stdout,
+        stderr=sys.stderr
+    )
 
     return process
 
@@ -117,22 +121,26 @@ def main() :
 
     # Start controller first
     processes = {}
-    processes[CONTROLLER_NAME] = run_controller()
-
     # Start or terminate benchmarks accourding to the schedule
     for _, row in schedule_df.iterrows() :
 
         # Sleep according to the schedule
         time.sleep(row[DELAY])
 
-        # If command is TERMINATE, terminate the instance
-        if(row[BENCHMARK] == TERMINATE) :
-            processes[row["INSTANCE_NAME"]].terminate()
-
-        # Else run benchmark
-        else :
-            processes[row["INSTANCE_NAME"]] = run_benchmark(
+        # if BENCHMARK is controller
+        if row[BENCHMARK] == CONTROLLER_NAME :
+            processes[CONTROLLER_NAME] = run_controller(
+                row[TYPE],
+                row[APPEND]
+            )
+        # if BENCHMARK is terminate
+        elif row[BENCHMARK] == TERMINATE :
+            processes[row[INSTANCE_NAME]].terminate()
+        # else run benchmark
+        else : 
+            processes[row[INSTANCE_NAME]] = run_benchmark(
                 row[BENCHMARK],
+                row[TYPE],
                 row[INSTANCE_NAME],
                 row[INPUT],
                 row[OUTPUT],
