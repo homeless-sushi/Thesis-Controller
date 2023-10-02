@@ -2,3 +2,4 @@
 add_subdirectory("EXAMPLE")
 add_subdirectory("GPU_INTERFERENCE")
 add_subdirectory("CPU_POWER")
+add_subdirectory("GPU_POWER")
