@@ -7,6 +7,7 @@ target_sources(CONTROLLER_Policies_LIB
         "src/ExamplePolicy.cc"
         "src/GpuInterferencePolicy.cc"
         "src/CpuPowerModelPolicy.cc"
+        "src/GpuPowerModelPolicy.cc"
 )
 
 # Add to the include path
