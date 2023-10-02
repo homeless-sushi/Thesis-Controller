@@ -16,6 +16,8 @@ namespace Policy
             
             std::fstream controllerLogFile;
             
+            int currentCpu = 0;
+
         public:
             ExamplePolicy(
                 unsigned int nCores,
