@@ -45,7 +45,6 @@ namespace Policy
             runningApps.erase(deregisteredApp);
         }
 
-        int currentCpu = 0;
         for(auto newAppPid : newRegisteredApps){
             registeredApps[newAppPid]->lock();
             AppData::setRegistered(registeredApps[newAppPid]->data, true);

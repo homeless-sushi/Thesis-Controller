@@ -59,7 +59,6 @@ namespace Policy
             runningApps.erase(deregisteredApp);
         }
 
-        int currentCpu = 0;
         for(auto newAppPid : newRegisteredApps){
             registeredApps[newAppPid]->lock();
             AppData::setUseGpu(registeredApps[newAppPid]->data, true);

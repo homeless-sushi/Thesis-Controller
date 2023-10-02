@@ -25,6 +25,8 @@ namespace Policy
             unsigned nFreqSamples;
             unsigned currFreqSamples = 0;
 
+            int currentCpu = 0;
+
         public:
             GpuPowerModelPolicy(
                 unsigned nCores,
