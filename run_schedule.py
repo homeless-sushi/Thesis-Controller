@@ -121,35 +121,52 @@ def main() :
 
     # Start controller first
     processes = {}
-    # Start or terminate benchmarks accourding to the schedule
-    for _, row in schedule_df.iterrows() :
+    try: 
+        # Start or terminate benchmarks accourding to the schedule
+        for _, row in schedule_df.iterrows() :
 
-        # Sleep according to the schedule
-        time.sleep(row[DELAY])
+            # Sleep according to the schedule
+            time.sleep(row[DELAY])
 
-        # if BENCHMARK is controller
-        if row[BENCHMARK] == CONTROLLER_NAME :
-            processes[CONTROLLER_NAME] = run_controller(
-                row[TYPE],
-                row[APPEND]
-            )
-        # if BENCHMARK is terminate
-        elif row[BENCHMARK] == TERMINATE :
-            processes[row[INSTANCE_NAME]].terminate()
-        # else run benchmark
-        else : 
-            processes[row[INSTANCE_NAME]] = run_benchmark(
-                row[BENCHMARK],
-                row[TYPE],
-                row[INSTANCE_NAME],
-                row[INPUT],
-                row[OUTPUT],
-                row[THROUGHPUT],
-                row[APPEND]
-            )
-
+            # if BENCHMARK is controller
+            if row[BENCHMARK] == CONTROLLER_NAME :
+                processes[CONTROLLER_NAME] = run_controller(
+                    row[TYPE],
+                    row[APPEND]
+                )
+            # if BENCHMARK is terminate
+            elif row[BENCHMARK] == TERMINATE :
+                processes[row[INSTANCE_NAME]].terminate()
+            # else run benchmark
+            else : 
+                processes[row[INSTANCE_NAME]] = run_benchmark(
+                    row[BENCHMARK],
+                    row[TYPE],
+                    row[INSTANCE_NAME],
+                    row[INPUT],
+                    row[OUTPUT],
+                    row[THROUGHPUT],
+                    row[APPEND]
+                )
+    # If an exception is raised, terminate the controller
+    # Otherwise the app register will persist in shared memory
+    except Exception as e:
+        if CONTROLLER_NAME in processes and processes[CONTROLLER_NAME].poll() is None:
+            processes[CONTROLLER_NAME].terminate()
+            
     # Wait for the controller to terminate
     processes[CONTROLLER_NAME].wait()
+
+    # If any other process is open, terminate it
+    for _, process in processes.items():
+        process.terminate()
+
+    time.sleep(0.5)
+
+    # If any process won't terminate, kill it
+    for _, process in processes.items():  
+        if process.poll() is None:
+            process.kill()
 
     return 0
 
