@@ -76,6 +76,7 @@ def main() :
     CONTROLLER_PULL_tot = detail_df[detail_df[PHASE] == CONTROLLER_PULL][DURATION].sum()
     MARGOT_PULL_tot = detail_df[detail_df[PHASE] == MARGOT_PULL][DURATION].sum()
     WIND_UP_tot = detail_df[detail_df[PHASE] == WIND_UP][DURATION].sum()
+    KERNEL_CPU_tot = detail_df[(detail_df[PHASE] == KERNEL) & (detail_df[DEVICE] == CPU)][DURATION].sum()
     UPLOAD_tot = detail_df[detail_df[PHASE] == UPLOAD][DURATION].sum()
     KERNEL_GPU_tot = detail_df[(detail_df[PHASE] == KERNEL) & (detail_df[DEVICE] == GPU)][DURATION].sum()
     DOWNLOAD_tot = detail_df[detail_df[PHASE] == DOWNLOAD][DURATION].sum()
@@ -88,6 +89,7 @@ def main() :
 
     # Number of loops
     n_loops = len(detail_df[detail_df[PHASE] == LOOP])
+    n_loops_cpu = len(detail_df[(detail_df[PHASE] == KERNEL) & (detail_df[DEVICE] == CPU)])
     n_loops_gpu = len(detail_df[(detail_df[PHASE] == KERNEL) & (detail_df[DEVICE] == GPU)])
     
     # Mean times
@@ -95,9 +97,10 @@ def main() :
     CONTROLLER_PULL_avg = CONTROLLER_PULL_tot / n_loops
     MARGOT_PULL_avg = MARGOT_PULL_tot / n_loops
     WIND_UP_avg = WIND_UP_tot / n_loops
-    UPLOAD_avg = UPLOAD_tot / n_loops_gpu
+    KERNEL_CPU_avg = 0 if n_loops_cpu == 0 else KERNEL_CPU_tot / n_loops_cpu
+    UPLOAD_avg = 0 if n_loops_gpu == 0 else UPLOAD_tot / n_loops_gpu
     KERNEL_GPU_avg = 0 if n_loops_gpu == 0 else KERNEL_GPU_tot / n_loops_gpu
-    DOWNLOAD_avg = DOWNLOAD_tot / n_loops_gpu
+    DOWNLOAD_avg = 0 if n_loops_gpu == 0 else DOWNLOAD_tot / n_loops_gpu
     WIND_DOWN_avg = WIND_DOWN_tot / n_loops
     CONTROLLER_PUSH_avg = CONTROLLER_PUSH_tot / n_loops
     MARGOT_PUSH_avg = MARGOT_PUSH_tot / n_loops
@@ -112,6 +115,7 @@ def main() :
         output_file.write(f"{CONTROLLER_PULL},{CONTROLLER_PULL_avg:.5f},{CONTROLLER_PULL_tot:.5f},{CONTROLLER_PULL_avg/LOOP_avg*100:.3f}\n")
         output_file.write(f"{MARGOT_PULL},{MARGOT_PULL_avg:.5f},{MARGOT_PULL_tot:.5f},{MARGOT_PULL_avg/LOOP_avg*100:.3f}\n")
         output_file.write(f"{WIND_UP},{WIND_UP_avg:.5f},{WIND_UP_tot:.5f},{WIND_UP_avg/LOOP_avg*100:.3f}\n")
+        output_file.write(f"{KERNEL}_{CPU},{KERNEL_CPU_avg:.5f},{KERNEL_CPU_tot:.5f},{KERNEL_CPU_avg/LOOP_avg*100:.3f}\n")
         output_file.write(f"{UPLOAD},{UPLOAD_avg:.5f},{UPLOAD_tot:.5f},{UPLOAD_avg/LOOP_avg*100:.3f}\n")
         output_file.write(f"{KERNEL}_{GPU},{KERNEL_GPU_avg:.5f},{KERNEL_GPU_tot:.5f},{KERNEL_GPU_avg/LOOP_avg*100:.3f}\n")
         output_file.write(f"{DOWNLOAD},{DOWNLOAD_avg:.5f},{DOWNLOAD_tot:.5f},{DOWNLOAD_avg/LOOP_avg*100:.3f}\n")
