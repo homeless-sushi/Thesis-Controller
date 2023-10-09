@@ -18,6 +18,8 @@ target_include_directories(CONTROLLER_Policies_LIB
         "include"
 )
 
+target_link_libraries(CONTROLLER_Policies_LIB PUBLIC CONTROLLER_Utils_LIB)
+
 # Add Runtime Manager dependency
 target_link_libraries(CONTROLLER_Policies_LIB PUBLIC AppRegister_Common_Lib)
 target_link_libraries(CONTROLLER_Policies_LIB PUBLIC AppRegister_Server_Lib)
