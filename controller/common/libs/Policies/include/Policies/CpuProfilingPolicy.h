@@ -1,3 +1,6 @@
+#ifndef POLICIES_CPU_PROFILING_POLICY_H
+#define POLICIES_CPU_PROFILING_POLICY_H
+
 #include <fstream>
 #include <set>
 #include <string>
@@ -40,3 +43,5 @@ namespace Policy
             void run(int cycle) override;
     };
 }
+
+#endif //POLICIES_CPU_PROFILING_POLICY_H

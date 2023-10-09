@@ -1,3 +1,6 @@
+#ifndef POLICIES_EXAMPLE_POLICY_H
+#define POLICIES_EXAMPLE_POLICY_H
+
 #include <fstream>
 #include <set>
 #include <string>
@@ -27,3 +30,5 @@ namespace Policy
             void run(int cycle) override;
     };
 }
+
+#endif //POLICIES_EXAMPLE_POLICY_H

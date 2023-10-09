@@ -1,3 +1,6 @@
+#ifndef POLICIES_SET_CONFIGURATION_POLICY_H
+#define POLICIES_SET_CONFIGURATION_POLICY_H
+
 #include <fstream>
 #include <map>
 #include <set>
@@ -85,3 +88,5 @@ namespace Policy
             void run(int cycle) override;
     };
 }
+
+#endif //POLICIES_SET_CONFIGURATION_POLICY_H
