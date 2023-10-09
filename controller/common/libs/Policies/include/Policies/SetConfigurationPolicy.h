@@ -8,6 +8,8 @@
 
 #include <sys/types.h>
 
+#include "Utils/ConfigInfo.h"
+
 #include "AppRegisterServer/Policy.h"
 #include "AppRegisterServer/Sensors.h"
 #include "AppRegisterServer/Utilization.h"
@@ -17,51 +19,6 @@ namespace Policy
 {
     class SetConfigurationPolicy : public Policy
     {
-        class Config 
-        {
-            public: 
-                struct AppConfig
-                {
-                    bool gpu;
-                    std::vector<int> cores;
-
-                    AppConfig() : 
-                        gpu{false},
-                        cores{0}
-                    {};
-
-                    AppConfig(
-                        bool gpu,
-                        std::vector<int> cores
-                    ) : 
-                        gpu{gpu},
-                        cores{cores}
-                    {};
-                };
-            
-            private:
-                Frequency::CPU_FRQ cpuFrq;
-                Frequency::GPU_FRQ gpuFrq;
-
-                std::map<std::string, AppConfig> appConfigs;
-            
-            public:
-                Config(
-                    Frequency::CPU_FRQ cpuFrq,
-                    Frequency::GPU_FRQ gpuFrq,
-                    std::map<std::string, AppConfig> appConfigs
-                ) :
-                    gpuFrq{gpuFrq},
-                    cpuFrq{cpuFrq},
-                    appConfigs{appConfigs}
-                {};
-                
-
-                Frequency::CPU_FRQ getCpuFrq() { return cpuFrq; }
-                Frequency::GPU_FRQ getGpuFrq() { return gpuFrq; }
-                AppConfig& getAppConfig(std::string name) { return appConfigs[name]; }
-        };
-
         private:
             std::set<pid_t> newRegisteredApps; /**< Apps that have been added this cycle */
             std::set<pid_t> runningApps;       /**< Apps that have been running */
@@ -73,9 +30,7 @@ namespace Policy
             Sensors::Sensors sensors;
             std::fstream sensorLogFile;
 
-            Config config;
-
-            Config readConfig(std::string configFileUrl);
+            ConfigInfo::ConfigInfo config;
 
         public:
             SetConfigurationPolicy(

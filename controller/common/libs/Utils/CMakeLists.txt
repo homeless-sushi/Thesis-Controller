@@ -4,6 +4,7 @@ add_library(CONTROLLER_Utils_LIB)
 # Add sources
 target_sources(CONTROLLER_Utils_LIB
     PRIVATE
+        "src/ConfigInfo.cc"
         "src/Estimate.cc"
 )
 

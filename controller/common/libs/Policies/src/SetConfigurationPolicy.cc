@@ -6,6 +6,8 @@
 #include <set>
 #include <vector>
 
+#include "Utils/ConfigInfo.h"
+
 #include "AppRegisterServer/App.h"
 #include "AppRegisterServer/AppData.h"
 #include "AppRegisterServer/Policy.h"
@@ -26,7 +28,7 @@ namespace Policy
         controllerLogFile(controllerLogUrl, controllerLogFile.out),
         utilization(nCores),
         sensorLogFile(sensorsLogUrl, sensorLogFile.out),
-        config(readConfig(configFileUrl))
+        config(ConfigInfo::readConfigInfo(configFileUrl))
     {
         Frequency::SetCpuFreq(config.getCpuFrq());
         Frequency::SetGpuFreq(config.getGpuFrq());
@@ -38,46 +40,6 @@ namespace Policy
             sensorLogFile << "UTILIZATION_" << i << ",";
         sensorLogFile << "CPUFREQ,GPUFREQ,SOCW,CPUW,GPUW" << std::endl;
     };
-
-
-    SetConfigurationPolicy::Config SetConfigurationPolicy::readConfig(std::string configFileUrl)
-    {
-        std::ifstream configFile(configFileUrl);
-    
-        std::string lineString;
-        getline(configFile, lineString);
-        std::istringstream firstLineStream(lineString);
-        unsigned int cpuFrq;
-        firstLineStream >> cpuFrq;
-        unsigned int gpuFrq;
-        firstLineStream >> gpuFrq;
-        
-        std::map<std::string, Config::AppConfig> configs;
-        while(configFile.good()){
-
-            getline(configFile, lineString);
-            std::istringstream lineStream(lineString);
-            std::string name;
-            lineStream >> name;
-            bool gpu;
-            lineStream >> gpu;
-            std::vector<int> cores;
-            while(lineStream.good()){
-
-                int core;
-                lineStream >> core;
-                cores.push_back(core);
-            }
-            configs[name] = Config::AppConfig(gpu, cores);
-        }
-
-        configFile.close();
-
-        return Config(
-            static_cast<Frequency::CPU_FRQ>(cpuFrq), 
-            static_cast<Frequency::GPU_FRQ>(gpuFrq), 
-            std::move(configs));
-    }
 
     void SetConfigurationPolicy::run(int cycle)
     {
@@ -102,8 +64,8 @@ namespace Policy
         for(auto newAppPid : newRegisteredApps){
             registeredApps[newAppPid]->lock();
             AppData::setRegistered(registeredApps[newAppPid]->data, true);
-            Config::AppConfig& newAppConfig =
-                config.getAppConfig(std::string(registeredApps[newAppPid]->descriptor.name));
+            ConfigInfo::AppConfigInfo& newAppConfig =
+                config.getAppConfigInfo(std::string(registeredApps[newAppPid]->descriptor.name));
             AppData::setUseGpu(registeredApps[newAppPid]->data, newAppConfig.gpu);
             CGroupUtils::UpdateCpuSet(newAppPid, newAppConfig.cores);
             AppData::setNCpuCores(registeredApps[newAppPid]->data, newAppConfig.cores.size());
