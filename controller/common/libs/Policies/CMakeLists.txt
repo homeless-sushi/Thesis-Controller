@@ -10,6 +10,7 @@ target_sources(CONTROLLER_Policies_LIB
         "src/GpuPowerModelPolicy.cc"
         "src/CpuProfilingPolicy.cc"
         "src/SetConfigurationPolicy.cc"
+        "src/PowerPredictPolicy.cc"
 )
 
 # Add to the include path
