@@ -1,3 +1,6 @@
+#ifndef POLICIES_GPU_POWER_MODEL_POLICY_H
+#define POLICIES_GPU_POWER_MODEL_POLICY_H
+
 #include <fstream>
 #include <set>
 #include <string>
@@ -37,3 +40,5 @@ namespace Policy
             void run(int cycle) override;
     };
 }
+
+#endif //POLICIES_GPU_POWER_MODEL_POLICY_H
