@@ -62,6 +62,7 @@ namespace Policy
         for(auto newAppPid : newRegisteredApps){
             registeredApps[newAppPid]->lock();
             AppData::setRegistered(registeredApps[newAppPid]->data, true);
+            AppData::setUseGpu(registeredApps[newAppPid]->data, true);
             CGroupUtils::UpdateCpuSet(newAppPid, std::vector<int>{currentCpu});
             currentCpu = (++currentCpu)%nCores;
             registeredApps[newAppPid]->unlock();
