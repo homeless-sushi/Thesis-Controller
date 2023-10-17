@@ -14,6 +14,7 @@
 
 #define N_CORES 4
 #define CONTROL_PERIOD 1000
+#define N_SAMPLES 10
 
 namespace po = boost::program_options;
 po::options_description SetupOptions();
@@ -47,9 +48,15 @@ int main(int argc, char *argv[])
 
     unsigned int i = 0;
     while(!stop){
-        policy->run(i);
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(CONTROL_PERIOD));
+        for(unsigned j = 0; j < N_SAMPLES-1; ++j){
+            Policy::GpuPowerModelPolicy* ptr(dynamic_cast<Policy::GpuPowerModelPolicy*>(policy.get()));
+            ptr->sense();
+            std::this_thread::sleep_for(std::chrono::milliseconds(CONTROL_PERIOD/N_SAMPLES));
+        }
+
+        policy->run(i);
+        std::this_thread::sleep_for(std::chrono::milliseconds(CONTROL_PERIOD/N_SAMPLES));
 
         i++;
     }

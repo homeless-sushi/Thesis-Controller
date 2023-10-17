@@ -38,6 +38,7 @@ namespace Policy
                 std::string sensorsLogUrl);
 
             void run(int cycle) override;
+            void sense();
     };
 }
 

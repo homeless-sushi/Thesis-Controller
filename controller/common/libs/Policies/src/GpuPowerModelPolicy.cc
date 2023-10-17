@@ -87,6 +87,7 @@ namespace Policy
 
         if(!runningApps.empty()){
             sensors.readSensors();
+            sensors.sampleSensors();
             std::vector<int> utilizations = utilization.computeUtilization();
             Frequency::GPU_FRQ currGpuFreq = Frequency::getCurrGpuFreq();
 
@@ -98,7 +99,7 @@ namespace Policy
                 << currGpuFreq << ","
                 << sensors.getSocW() << ","
                 << sensors.getCpuW() << ","
-                << sensors.getGpuW() << std::endl;
+                << sensors.getAvgGpuW() << std::endl;
 
             ++currFreqSamples;
             if(!(currFreqSamples<nFreqSamples)){
@@ -112,4 +113,9 @@ namespace Policy
 
         unlock();
     }
+
+    void GpuPowerModelPolicy::sense()
+    {
+        sensors.sampleSensors();
+    };
 }
