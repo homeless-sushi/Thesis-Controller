@@ -18,3 +18,7 @@ target_link_libraries(CONTROLLER_FinalPolicy_LIB PUBLIC CONTROLLER_Utils_LIB)
 # Add Runtime Manager dependency
 target_link_libraries(CONTROLLER_FinalPolicy_LIB PUBLIC AppRegister_Common_Lib)
 target_link_libraries(CONTROLLER_FinalPolicy_LIB PUBLIC AppRegister_Server_Lib)
+
+# Add ZeroMQ and zmqpp dependency
+target_link_libraries(CONTROLLER_FinalPolicy_LIB PUBLIC zmq)
+target_link_libraries(CONTROLLER_FinalPolicy_LIB PUBLIC zmqpp)

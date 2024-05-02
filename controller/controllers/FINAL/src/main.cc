@@ -37,11 +37,13 @@ int main(int argc, char *argv[])
 
     std::string controllerLogUrl(vm["controller-log"].as<std::string>());
     std::string sensorsLogUrl(vm["sensors-log"].as<std::string>());
+    std::string serverEndPoint("tcp://localhost:5555");
     std::unique_ptr<Policy::Policy> policy(
         new Policy::FinalPolicy(
             N_CORES,
             controllerLogUrl,
-            sensorsLogUrl
+            sensorsLogUrl,
+            serverEndPoint
     ));
 
     unsigned int i = 0;

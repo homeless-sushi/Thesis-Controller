@@ -16,20 +16,27 @@
 #include "AppRegisterServer/Frequency.h"
 #include "AppRegisterServer/CGroupUtils.h"
 
+#include <zmqpp/zmqpp.hpp>
+
 namespace Policy
 {
     FinalPolicy::FinalPolicy(
         unsigned nCores,
         std::string controllerLogUrl,
-        std::string sensorsLogUrl
+        std::string sensorsLogUrl,
+        std::string serverEndpoint
     ) :
         Policy(nCores),
         controllerLogFile(controllerLogUrl, controllerLogFile.out),
         utilization(nCores),
-        sensorLogFile(sensorsLogUrl, sensorLogFile.out)
+        sensorLogFile(sensorsLogUrl, sensorLogFile.out),
+        context(),
+        socket(context, zmqpp::socket_type::req)
     {
         //Frequency::SetCpuFreq(Frequency::getMinCpuFreq());
         //Frequency::SetGpuFreq(Frequency::getMinGpuFreq());
+
+        socket.connect(serverEndpoint);
 
         controllerLogFile << "CYCLE,PID,NAME,TARGET,CURRENT" << std::endl;
 
@@ -124,7 +131,10 @@ namespace Policy
                 << registeredApps[appPid]->data->use_gpu << ","
                 << registeredApps[appPid]->data->n_cpu_cores  << ";";
         }
-        std::cout << messageToSend.str() << "\n" << std::endl;
+        socket.send(messageToSend.str());
+
+        std::string replyBuffer;
+        socket.receive(replyBuffer);
 
         newRegisteredApps.clear();
         unlock();

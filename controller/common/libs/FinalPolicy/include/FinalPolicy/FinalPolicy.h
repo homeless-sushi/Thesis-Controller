@@ -11,6 +11,8 @@
 #include "AppRegisterServer/Sensors.h"
 #include "AppRegisterServer/Utilization.h"
 
+#include <zmqpp/zmqpp.hpp>
+
 namespace Policy
 {
     class FinalPolicy : public Policy
@@ -24,12 +26,17 @@ namespace Policy
 
             Utilization::Utilization utilization;
             Sensors::Sensors sensors;
+
+            // ZMQ
+            zmqpp::context context;
+            zmqpp::socket socket;
             
         public:
             FinalPolicy(
                 unsigned nCores,
                 std::string controllerLogUrl,
-                std::string sensorsLogUrl);
+                std::string sensorsLogUrl,
+                std::string serverEndpoint);
 
             ~FinalPolicy() override = default;
 
