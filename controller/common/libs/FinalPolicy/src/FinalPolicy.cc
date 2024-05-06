@@ -133,8 +133,69 @@ namespace Policy
         }
         socket.send(messageToSend.str());
 
+        //read incoming system message
         std::string replyBuffer;
         socket.receive(replyBuffer);
+        std::istringstream replyStream(replyBuffer);
+        std::string systemLine;
+        std::getline(replyStream, systemLine, '\n');
+        std::string appsLine;
+        std::getline(replyStream, appsLine, '\n');
+        std::istringstream systemLineStream(systemLine);
+        std::string systemPrefix;
+        char separator;
+        unsigned int newCpuFreq;
+        unsigned int newGpuFreq;
+        unsigned int newPow;
+        std::getline(systemLineStream, systemPrefix, ':') 
+            >> newCpuFreq >> separator 
+            >> newGpuFreq >> separator
+            >> newPow;
+        Frequency::SetCpuFreq(static_cast<Frequency::CPU_FRQ>(newCpuFreq));
+        Frequency::SetGpuFreq(static_cast<Frequency::GPU_FRQ>(newGpuFreq));
+        int currentCpu = 0;
+        std::istringstream appsLineStream(appsLine);
+        std::string appsPrefix;
+        std::getline(appsLineStream, appsPrefix, ':');
+        std::string currAppInfo;
+        while(std::getline(appsLineStream, currAppInfo, ';')){
+            std::istringstream currAppLineStream(currAppInfo);
+            pid_t appPid;
+            std::string name;
+            unsigned int size;
+            unsigned int maxCpuCores;
+            bool isGpu;
+            bool isApproximate;
+            float minimumThroughput;
+            unsigned int minimumPrecision;
+            float currentThroughput;
+            bool onGpu;
+            unsigned int nCpuCores;
+            currAppLineStream >> appPid >> separator;
+            std::getline(currAppLineStream, name, ',');
+            currAppLineStream >> size >> separator
+                >> maxCpuCores >> separator
+                >> isGpu >> separator
+                >> isApproximate >> separator
+                >> minimumThroughput >> separator
+                >> minimumPrecision >> separator
+                >> currentThroughput >> separator
+                >> onGpu >> separator
+                >> nCpuCores;
+            registeredApps[appPid]->lock();
+            if (std::find(newRegisteredApps.begin(), newRegisteredApps.end(), appPid) != newRegisteredApps.end()) {
+                AppData::setRegistered(registeredApps[appPid]->data, true);
+            }
+            std::vector<int> cores{};
+            for (int i = 0; i < nCpuCores; i++){
+                cores.push_back(currentCpu);
+                currentCpu++;
+            }
+            CGroupUtils::UpdateCpuSet(appPid, cores);
+            AppData::setNCpuCores(registeredApps[appPid]->data, cores.size());
+            AppData::setUseGpu(registeredApps[appPid]->data, onGpu);
+            registeredApps[appPid]->unlock();
+        }
 
         newRegisteredApps.clear();
         unlock();
