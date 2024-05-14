@@ -194,6 +194,8 @@ namespace Policy
             CGroupUtils::UpdateCpuSet(appPid, cores);
             AppData::setNCpuCores(registeredApps[appPid]->data, cores.size());
             AppData::setUseGpu(registeredApps[appPid]->data, onGpu);
+            AppData::setCpuFreq(registeredApps[appPid]->data, newCpuFreq);
+            AppData::setGpuFreq(registeredApps[appPid]->data, newGpuFreq);
             registeredApps[appPid]->unlock();
         }
 
