@@ -45,6 +45,9 @@ namespace Policy
     {
         lock();
 
+        Frequency::CPU_FRQ cpuFreq = Frequency::getCurrCpuFreq();
+        Frequency::GPU_FRQ gpuFreq = Frequency::getCurrGpuFreq();
+
         std::vector<pid_t> deregisteredApps;
         std::vector<pid_t> tmp;
 
@@ -69,6 +72,8 @@ namespace Policy
             AppData::setUseGpu(registeredApps[newAppPid]->data, newAppConfig.gpu);
             CGroupUtils::UpdateCpuSet(newAppPid, newAppConfig.cores);
             AppData::setNCpuCores(registeredApps[newAppPid]->data, newAppConfig.cores.size());
+            AppData::setCpuFreq(registeredApps[newAppPid]->data, cpuFreq);
+            AppData::setGpuFreq(registeredApps[newAppPid]->data, gpuFreq);
             registeredApps[newAppPid]->unlock();
         }
 
@@ -96,8 +101,8 @@ namespace Policy
             << cycle << ",";
         for(unsigned i = 0; i < nCores; ++i)
                 sensorLogFile << utilizations[i] << ",";
-        sensorLogFile << Frequency::getCurrCpuFreq() << ","
-            << Frequency::getCurrGpuFreq() << ","
+        sensorLogFile << cpuFreq << ","
+            << gpuFreq << ","
             << sensors.getSocW() << ","
             << sensors.getCpuW() << ","
             << sensors.getGpuW() << std::endl;
