@@ -10,6 +10,7 @@
 
 #include "AppRegisterServer/App.h"
 #include "AppRegisterServer/AppData.h"
+#include "AppRegisterServer/AppUtils.h"
 #include "AppRegisterServer/Policy.h"
 #include "AppRegisterServer/Sensors.h"
 #include "AppRegisterServer/Utilization.h"
@@ -158,6 +159,7 @@ namespace Policy
         std::string appsPrefix;
         std::getline(appsLineStream, appsPrefix, ':');
         std::string currAppInfo;
+        std::set<pid_t> returnedApps; 
         while(std::getline(appsLineStream, currAppInfo, ';')){
             std::istringstream currAppLineStream(currAppInfo);
             pid_t appPid;
@@ -182,6 +184,7 @@ namespace Policy
                 >> currentThroughput >> separator
                 >> onGpu >> separator
                 >> nCpuCores;
+            returnedApps.insert(appPid);
             registeredApps[appPid]->lock();
             if (std::find(newRegisteredApps.begin(), newRegisteredApps.end(), appPid) != newRegisteredApps.end()) {
                 AppData::setRegistered(registeredApps[appPid]->data, true);
@@ -200,6 +203,16 @@ namespace Policy
         }
 
         newRegisteredApps.clear();
+
+        for(auto tuple = registeredApps.begin(); tuple != registeredApps.end(); ++tuple) {
+            pid_t pid = tuple->first;
+            if (std::find(returnedApps.begin(), returnedApps.end(), pid) == returnedApps.end()) {
+                registeredApps.erase(pid);
+                runningApps.erase(pid);
+                AppUtils::killApp(pid);
+            }
+        }
+
         unlock();
     }
 }
