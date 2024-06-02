@@ -152,8 +152,11 @@ namespace Policy
             >> newCpuFreq >> separator 
             >> newGpuFreq >> separator
             >> newPow;
-        Frequency::SetCpuFreq(static_cast<Frequency::CPU_FRQ>(newCpuFreq));
-        Frequency::SetGpuFreq(static_cast<Frequency::GPU_FRQ>(newGpuFreq));
+        if(currCpuFreq != static_cast<Frequency::CPU_FRQ>(newCpuFreq))
+            Frequency::SetCpuFreq(static_cast<Frequency::CPU_FRQ>(newCpuFreq));
+        if(currGpuFreq != static_cast<Frequency::GPU_FRQ>(newGpuFreq)){
+            Frequency::SetGpuFreq(static_cast<Frequency::GPU_FRQ>(newGpuFreq));
+        }
         int currentCpu = 0;
         std::istringstream appsLineStream(appsLine);
         std::string appsPrefix;
