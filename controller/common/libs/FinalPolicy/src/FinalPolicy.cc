@@ -54,9 +54,6 @@ namespace Policy
         deregisterDetachedApps();
         deregisterDeadApps();
 
-        //Save currentThroughput for later
-        std::map<pid_t, long double> currentThroughput;
-
         // Write controllerLogFile
         for (const auto& pairPidApp : registeredApps) {
 
@@ -65,7 +62,7 @@ namespace Policy
             long double requestedThroughput = pairPidApp.second->data->requested_throughput;
             struct ticks ticks = pairPidApp.second->getWindowTicks();
             long double currThroughput = getWindowThroughput(ticks);
-            currentThroughput[pairPidApp.first] = currThroughput;
+            pairPidApp.second->currentThroughput = currThroughput;
             unsigned int minimumPrecison = pairPidApp.second->data->minimum_precision;
             unsigned int currPrecision = pairPidApp.second->data->curr_precision;
             pairPidApp.second->unlock();
@@ -76,7 +73,7 @@ namespace Policy
                 << pairPidApp.second->descriptor.app_type << ","
                 << pairPidApp.second->descriptor.input_size << ","
                 << requestedThroughput << ","
-                << currThroughput << ","
+                << pairPidApp.second->currentThroughput << ","
                 << minimumPrecison << ","
                 << currPrecision << std::endl;
         }
@@ -188,13 +185,7 @@ namespace Policy
             if (!(registeredApps[appPid]->data->registered)) {
                 AppData::setRegistered(registeredApps[appPid]->data, true);
             }
-            std::vector<int> cores{};
-            for (int i = 0; i < nCpuCores; i++){
-                cores.push_back(currentCpu);
-                currentCpu++;
-            }
-            CGroupUtils::UpdateCpuSet(appPid, cores);
-            AppData::setNCpuCores(registeredApps[appPid]->data, cores.size());
+            registeredApps[appPid]->nAssignedCores = nCpuCores;
             AppData::setUseGpu(registeredApps[appPid]->data, onGpu);
             AppData::setCpuFreq(registeredApps[appPid]->data, newCpuFreq);
             AppData::setGpuFreq(registeredApps[appPid]->data, newGpuFreq);
@@ -204,9 +195,51 @@ namespace Policy
         for(auto tuple = registeredApps.begin(); tuple != registeredApps.end(); ++tuple) {
             pid_t pid = tuple->first;
             if (std::find(returnedApps.begin(), returnedApps.end(), pid) == returnedApps.end()) {
+                freeCores.insert(freeCores.end(), registeredApps[pid]->currentCores.begin(), registeredApps[pid]->currentCores.end());
                 registeredApps.erase(pid);
                 AppUtils::killApp(pid);
             }
+        }
+
+        //Lower the number of cores
+        for(auto tuple = registeredApps.begin(); tuple != registeredApps.end(); ++tuple) {
+            pid_t pid = tuple->first;
+            const unsigned int nAssignedCores = registeredApps[pid]->nAssignedCores;
+            const unsigned int nCurrentCores = registeredApps[pid]->currentCores.size();
+
+            if(nAssignedCores >= nCurrentCores){
+                continue;
+            }
+
+            for(int i = nAssignedCores; i < nCurrentCores; i++) {
+                const unsigned int core = registeredApps[pid]->currentCores.back();
+                registeredApps[pid]->currentCores.pop_back();
+                freeCores.push_back(core);
+            }
+            registeredApps[pid]->lock();
+            CGroupUtils::UpdateCpuSet(pid, registeredApps[pid]->currentCores);
+            AppData::setNCpuCores(registeredApps[pid]->data, registeredApps[pid]->currentCores.size());
+            registeredApps[pid]->unlock();
+        }
+        //Raise the number of cores
+        for(auto tuple = registeredApps.begin(); tuple != registeredApps.end(); ++tuple) {
+            pid_t pid = tuple->first;
+            const unsigned int nAssignedCores = registeredApps[pid]->nAssignedCores;
+            const unsigned int nCurrentCores = registeredApps[pid]->currentCores.size();
+
+            if(nAssignedCores <= nCurrentCores){
+                continue;
+            }
+
+            for(int i = nCurrentCores; i < nAssignedCores; i++) {
+                const unsigned int core = freeCores.back();
+                freeCores.pop_back();
+                registeredApps[pid]->currentCores.push_back(core);
+            }
+            registeredApps[pid]->lock();
+            CGroupUtils::UpdateCpuSet(pid, registeredApps[pid]->currentCores);
+            AppData::setNCpuCores(registeredApps[pid]->data, registeredApps[pid]->currentCores.size());
+            registeredApps[pid]->unlock();
         }
 
         unlock();
