@@ -17,10 +17,7 @@ namespace Policy
 {
     class FinalPolicy : public Policy
     {
-        private:
-            std::set<pid_t> newRegisteredApps; /**< Apps that have been added this cycle */
-            std::set<pid_t> runningApps;       /**< Apps that have been running */
-            
+        private:            
             std::fstream controllerLogFile;
             std::fstream sensorLogFile;
 

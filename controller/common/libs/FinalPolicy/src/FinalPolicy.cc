@@ -51,39 +51,30 @@ namespace Policy
     {
         lock();
 
-        //Deregister detached and dead apps
-        std::vector<pid_t> deregisteredApps;
-        std::vector<pid_t> detachedApps(deregisterDetachedApps());
-        deregisteredApps.insert(std::end(deregisteredApps), std::begin(detachedApps), std::end(detachedApps));
-        std::vector<pid_t> deadApps(deregisterDeadApps());
-        deregisteredApps.insert(std::end(deregisteredApps), std::begin(deadApps), std::end(deadApps));
-//      std::vector<pid_t> newAppsVec(registerNewApps());
-//      std::copy(newAppsVec.begin(),newAppsVec.end(), std::inserter(newRegisteredApps, newRegisteredApps.end()));
-        for(pid_t deregisteredApp : deregisteredApps){
-            runningApps.erase(deregisteredApp);
-        }
+        deregisterDetachedApps();
+        deregisterDeadApps();
 
         //Save currentThroughput for later
         std::map<pid_t, long double> currentThroughput;
 
         // Write controllerLogFile
-        for(pid_t runningAppPid : runningApps) 
-        {
-            registeredApps[runningAppPid]->lock();
-            registeredApps[runningAppPid]->readTicks();
-            long double requestedThroughput = registeredApps[runningAppPid]->data->requested_throughput;
-            struct ticks ticks = registeredApps[runningAppPid]->getWindowTicks();
+        for (const auto& pairPidApp : registeredApps) {
+
+            pairPidApp.second->lock();
+            pairPidApp.second->readTicks();
+            long double requestedThroughput = pairPidApp.second->data->requested_throughput;
+            struct ticks ticks = pairPidApp.second->getWindowTicks();
             long double currThroughput = getWindowThroughput(ticks);
-            currentThroughput[runningAppPid] = currThroughput;
-            unsigned int minimumPrecison = registeredApps[runningAppPid]->data->minimum_precision;
-            unsigned int currPrecision = registeredApps[runningAppPid]->data->curr_precision;
-            registeredApps[runningAppPid]->unlock();
+            currentThroughput[pairPidApp.first] = currThroughput;
+            unsigned int minimumPrecison = pairPidApp.second->data->minimum_precision;
+            unsigned int currPrecision = pairPidApp.second->data->curr_precision;
+            pairPidApp.second->unlock();
             
             controllerLogFile << cycle << ","
-                << registeredApps[runningAppPid]->descriptor.pid << ","
-                << registeredApps[runningAppPid]->descriptor.name << ","
-                << registeredApps[runningAppPid]->descriptor.app_type << ","
-                << registeredApps[runningAppPid]->descriptor.input_size << ","
+                << pairPidApp.second->descriptor.pid << ","
+                << pairPidApp.second->descriptor.name << ","
+                << pairPidApp.second->descriptor.app_type << ","
+                << pairPidApp.second->descriptor.input_size << ","
                 << requestedThroughput << ","
                 << currThroughput << ","
                 << minimumPrecison << ","
@@ -111,10 +102,8 @@ namespace Policy
                 << gpuW << std::endl;
         }
 
-        //instert new apps
-        std::vector<pid_t> newAppsVec(registerNewApps());
-        std::copy(newAppsVec.begin(),newAppsVec.end(), std::inserter(newRegisteredApps, newRegisteredApps.end()));    
-        runningApps.insert(newRegisteredApps.begin(), newRegisteredApps.end());
+        //instert new appsì
+        registerNewApps();
 
         //write outgoing message
         std::ostringstream messageToSend;
@@ -124,20 +113,20 @@ namespace Policy
             << cpuW + gpuW << "\n";
 
         messageToSend << "APPS:";
-        for(auto appPid : runningApps){
+        for (const auto& pairPidApp : registeredApps) {
 
             messageToSend 
-                << appPid << ","
-                << registeredApps[appPid]->descriptor.app_type << ","
-                << registeredApps[appPid]->descriptor.input_size << "," 
-                << registeredApps[appPid]->descriptor.max_threads << ","
-                << registeredApps[appPid]->descriptor.gpu_implementation << ","
-                << registeredApps[appPid]->descriptor.approximate_application << ","
-                << static_cast<double>(registeredApps[appPid]->data->requested_throughput) << ","
-                << registeredApps[appPid]->data->minimum_precision << ","
-                << static_cast<double>(currentThroughput[appPid]) << ","
-                << registeredApps[appPid]->data->use_gpu << ","
-                << registeredApps[appPid]->data->n_cpu_cores  << ";";
+                << pairPidApp.first << ","
+                << pairPidApp.second->descriptor.app_type << ","
+                << pairPidApp.second->descriptor.input_size << ","
+                << pairPidApp.second->descriptor.max_threads << ","
+                << pairPidApp.second->descriptor.gpu_implementation << ","
+                << pairPidApp.second->descriptor.approximate_application << ","
+                << static_cast<double>(pairPidApp.second->data->requested_throughput) << ","
+                << pairPidApp.second->data->minimum_precision << ","
+                << static_cast<double>(pairPidApp.second->currentThroughput) << ","
+                << pairPidApp.second->data->use_gpu << ","
+                << pairPidApp.second->data->n_cpu_cores  << ";";
         }
         socket.send(messageToSend.str());
 
@@ -196,7 +185,7 @@ namespace Policy
                 >> nCpuCores;
             returnedApps.insert(appPid);
             registeredApps[appPid]->lock();
-            if (std::find(newRegisteredApps.begin(), newRegisteredApps.end(), appPid) != newRegisteredApps.end()) {
+            if (!(registeredApps[appPid]->data->registered)) {
                 AppData::setRegistered(registeredApps[appPid]->data, true);
             }
             std::vector<int> cores{};
@@ -212,13 +201,10 @@ namespace Policy
             registeredApps[appPid]->unlock();
         }
 
-        newRegisteredApps.clear();
-
         for(auto tuple = registeredApps.begin(); tuple != registeredApps.end(); ++tuple) {
             pid_t pid = tuple->first;
             if (std::find(returnedApps.begin(), returnedApps.end(), pid) == returnedApps.end()) {
                 registeredApps.erase(pid);
-                runningApps.erase(pid);
                 AppUtils::killApp(pid);
             }
         }
