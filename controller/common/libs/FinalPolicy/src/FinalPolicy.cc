@@ -39,7 +39,7 @@ namespace Policy
 
         socket.connect(serverEndpoint);
 
-        controllerLogFile << "CYCLE,PID,NAME,TARGET,CURRENT" << std::endl;
+        controllerLogFile << "CYCLE,PID,NAME,APP,INPUT_SIZE,TARGET_THR,CURRENT_THR,MIN_PRECISION,CURR_PRECISION" << std::endl;
 
         sensorLogFile << "CYCLE,";
         for(unsigned i = 0; i < nCores; ++i)
@@ -75,13 +75,19 @@ namespace Policy
             struct ticks ticks = registeredApps[runningAppPid]->getWindowTicks();
             long double currThroughput = getWindowThroughput(ticks);
             currentThroughput[runningAppPid] = currThroughput;
+            unsigned int minimumPrecison = registeredApps[runningAppPid]->data->minimum_precision;
+            unsigned int currPrecision = registeredApps[runningAppPid]->data->curr_precision;
             registeredApps[runningAppPid]->unlock();
             
             controllerLogFile << cycle << ","
                 << registeredApps[runningAppPid]->descriptor.pid << ","
                 << registeredApps[runningAppPid]->descriptor.name << ","
+                << registeredApps[runningAppPid]->descriptor.app_type << ","
+                << registeredApps[runningAppPid]->descriptor.input_size << ","
                 << requestedThroughput << ","
-                << currThroughput << std::endl;
+                << currThroughput << ","
+                << minimumPrecison << ","
+                << currPrecision << std::endl;
         }
 
         Frequency::CPU_FRQ currCpuFreq = Frequency::getCurrCpuFreq();
@@ -122,7 +128,8 @@ namespace Policy
 
             messageToSend 
                 << appPid << ","
-                << registeredApps[appPid]->descriptor.name << "," //the name should include the size somehow
+                << registeredApps[appPid]->descriptor.app_type << ","
+                << registeredApps[appPid]->descriptor.input_size << "," 
                 << registeredApps[appPid]->descriptor.max_threads << ","
                 << registeredApps[appPid]->descriptor.gpu_implementation << ","
                 << registeredApps[appPid]->descriptor.approximate_application << ","
