@@ -146,9 +146,9 @@ namespace Policy
             >> newGpuFreq >> separator
             >> newPow;
         if(currCpuFreq != static_cast<Frequency::CPU_FRQ>(newCpuFreq))
-            Frequency::SetCpuFreq(static_cast<Frequency::CPU_FRQ>(newCpuFreq));
+        //    Frequency::SetCpuFreq(static_cast<Frequency::CPU_FRQ>(newCpuFreq));
         if(currGpuFreq != static_cast<Frequency::GPU_FRQ>(newGpuFreq)){
-            Frequency::SetGpuFreq(static_cast<Frequency::GPU_FRQ>(newGpuFreq));
+        //    Frequency::SetGpuFreq(static_cast<Frequency::GPU_FRQ>(newGpuFreq));
         }
         int currentCpu = 0;
         std::istringstream appsLineStream(appsLine);
@@ -192,14 +192,14 @@ namespace Policy
             registeredApps[appPid]->unlock();
         }
 
-        for(auto tuple = registeredApps.begin(); tuple != registeredApps.end(); ++tuple) {
-            pid_t pid = tuple->first;
-            if (std::find(returnedApps.begin(), returnedApps.end(), pid) == returnedApps.end()) {
-                freeCores.insert(freeCores.end(), registeredApps[pid]->currentCores.begin(), registeredApps[pid]->currentCores.end());
-                registeredApps.erase(pid);
-                AppUtils::killApp(pid);
-            }
-        }
+        //for(auto tuple = registeredApps.begin(); tuple != registeredApps.end(); ++tuple) {
+        //    pid_t pid = tuple->first;
+        //    if (std::find(returnedApps.begin(), returnedApps.end(), pid) == returnedApps.end()) {
+        //        freeCores.insert(freeCores.end(), registeredApps[pid]->currentCores.begin(), registeredApps[pid]->currentCores.end());
+        //        registeredApps.erase(pid);
+        //        AppUtils::killApp(pid);
+        //    }
+        //}
 
         //Lower the number of cores
         for(auto tuple = registeredApps.begin(); tuple != registeredApps.end(); ++tuple) {
@@ -217,7 +217,7 @@ namespace Policy
                 freeCores.push_back(core);
             }
             registeredApps[pid]->lock();
-            CGroupUtils::UpdateCpuSet(pid, registeredApps[pid]->currentCores);
+        //    CGroupUtils::UpdateCpuSet(pid, registeredApps[pid]->currentCores);
             AppData::setNCpuCores(registeredApps[pid]->data, registeredApps[pid]->currentCores.size());
             registeredApps[pid]->unlock();
         }
@@ -237,7 +237,7 @@ namespace Policy
                 registeredApps[pid]->currentCores.push_back(core);
             }
             registeredApps[pid]->lock();
-            CGroupUtils::UpdateCpuSet(pid, registeredApps[pid]->currentCores);
+        //    CGroupUtils::UpdateCpuSet(pid, registeredApps[pid]->currentCores);
             AppData::setNCpuCores(registeredApps[pid]->data, registeredApps[pid]->currentCores.size());
             registeredApps[pid]->unlock();
         }
