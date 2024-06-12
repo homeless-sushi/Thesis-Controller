@@ -186,9 +186,9 @@ namespace Policy
                 AppData::setRegistered(registeredApps[appPid]->data, true);
             }
             registeredApps[appPid]->nAssignedCores = nCpuCores;
-            AppData::setUseGpu(registeredApps[appPid]->data, onGpu);
-            AppData::setCpuFreq(registeredApps[appPid]->data, newCpuFreq);
-            AppData::setGpuFreq(registeredApps[appPid]->data, newGpuFreq);
+        //    AppData::setUseGpu(registeredApps[appPid]->data, onGpu);
+            AppData::setCpuFreq(registeredApps[appPid]->data, currCpuFreq);
+            AppData::setGpuFreq(registeredApps[appPid]->data, currGpuFreq);
             registeredApps[appPid]->unlock();
         }
 
@@ -218,7 +218,7 @@ namespace Policy
             }
             registeredApps[pid]->lock();
         //    CGroupUtils::UpdateCpuSet(pid, registeredApps[pid]->currentCores);
-            AppData::setNCpuCores(registeredApps[pid]->data, registeredApps[pid]->currentCores.size());
+        //    AppData::setNCpuCores(registeredApps[pid]->data, registeredApps[pid]->currentCores.size());
             registeredApps[pid]->unlock();
         }
         //Raise the number of cores
@@ -238,7 +238,7 @@ namespace Policy
             }
             registeredApps[pid]->lock();
         //    CGroupUtils::UpdateCpuSet(pid, registeredApps[pid]->currentCores);
-            AppData::setNCpuCores(registeredApps[pid]->data, registeredApps[pid]->currentCores.size());
+        //    AppData::setNCpuCores(registeredApps[pid]->data, registeredApps[pid]->currentCores.size());
             registeredApps[pid]->unlock();
         }
 
