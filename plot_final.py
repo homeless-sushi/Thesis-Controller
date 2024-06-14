@@ -7,6 +7,7 @@ import pandas as pd
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
 # Log file names
 CONTROLLER_FILE = "controller.csv"
@@ -151,13 +152,25 @@ def main() :
         app_trace[CURR_PRECISION] = start_pad + app_trace[CURR_PRECISION] + end_pad
 
     # Figure
-    fig, axs = plt.subplots(3,2)
-    throughput_ax = axs[0, 0]
-    precision_ax = axs[0, 1]
-    resources_ax = axs[1, 0]
-    fig.delaxes(axs[1,1])
-    power_ax = axs[2, 0]
-    freq_ax = axs[2, 1]
+    #fig, axs = plt.subplots(3,2)
+    #throughput_ax = axs[0, 0]
+    #precision_ax = axs[0, 1]
+    #resources_ax = axs[1, 0]
+    #fig.delaxes(axs[1,1])
+    #power_ax = axs[2, 0]
+    #freq_ax = axs[2, 1]
+    
+    fig = plt.figure(figsize=(12, 9))
+
+    # Define a 3x3 GridSpec
+    gs = gridspec.GridSpec(3, 4, figure=fig, wspace=0.5)
+
+    # Create the axes for the first row (centered and larger)
+    throughput_ax = fig.add_subplot(gs[0:2, 0:2]) 
+    precision_ax = fig.add_subplot(gs[0:2, 2:4])
+    power_ax = fig.add_subplot(gs[2, 0])
+    resources_ax = fig.add_subplot(gs[2, 1:3])
+    freq_ax = fig.add_subplot(gs[2, 3])
 
     # Draw Throughput
     throughput_ax.set_title('Applications Throughput')
@@ -404,7 +417,7 @@ def main() :
     cpu_freq_ax.tick_params(axis='y', which='both', labelsize=7, labelcolor='blue')
     cpu_freq_ax.tick_params(axis='x', which='both', labelsize=7)
     cpu_freq_ax.set_ylim(bottom=cpu_freqs[0], top=cpu_freqs[-1]*1.05)
-    cpu_freq_ax.legend(loc="upper left",fontsize="small")
+    cpu_freq_ax.legend(loc="center left",fontsize="xx-small")
 
     gpu_freq_ax.set_ylabel('GPU Freq (Hz)', color='lime')
     gpu_freq_ax.plot(
@@ -419,7 +432,7 @@ def main() :
         gpu_freq_ax.axhline(y=used_gpu_freq, color='gray', linestyle='-', linewidth=0.5)
     gpu_freq_ax.tick_params(axis='y', which='both', labelsize=7, labelcolor='lime')
     gpu_freq_ax.set_ylim(bottom=gpu_freqs[0], top=gpu_freqs[-1]*1.05)
-    gpu_freq_ax.legend(loc="upper right",fontsize="small")
+    gpu_freq_ax.legend(loc="center right",fontsize="xx-small")
 
     #plt.savefig(args.out_plot_url)
     plt.subplots_adjust(hspace=0.455, wspace=0.3)
