@@ -193,6 +193,7 @@ def main() :
             label= f"{app_trace[APP]}[{app_trace[INPUT_SIZE]}]",
             color= app_trace[COLOR]
         )
+    throughput_ax.tick_params(axis='both', which='both', labelsize=7)
     throughput_ax.set_ylim(bottom=0)
     throughput_ax.legend(loc="lower center",fontsize="xx-small",ncol=len(app_traces))
 
@@ -256,6 +257,7 @@ def main() :
             color= app_trace[COLOR]
         )
     precision_ax.set_yticks(range(0,101,10))
+    precision_ax.tick_params(axis='both', which='both', labelsize=7)
     precision_ax.set_ylim(bottom=0, top=110)
     precision_ax.legend(loc="lower center",fontsize="xx-small",ncol=len(app_traces))
 
@@ -344,7 +346,7 @@ def main() :
         np.arange(data.shape[0]),
         labels=[f"CPU core #{i}" for i in range(1,5)] + [f"GPU slot #{i}" for i in range(1,3)]
     )
-    resources_ax.tick_params(axis='y', which='both', labelsize=7)
+    resources_ax.tick_params(axis='both', which='both', labelsize=7)
     #resources_ax.set_yticklabels(
     #    [f"CPU core #{i}" for i in range(1,5)] + [f"GPU slot #{i}" for i in range(1,3)]
     #)
@@ -377,6 +379,7 @@ def main() :
         label= f"Power Draw",
         color='red'
     )
+    power_ax.tick_params(axis='both', which='both', labelsize=7)
     power_ax.set_ylim(bottom=0)
     power_ax.legend(loc="lower center",fontsize="small")
 
@@ -399,6 +402,7 @@ def main() :
     for used_cpu_freq in power_df[CPUFREQ].unique():
         cpu_freq_ax.axhline(y=used_cpu_freq, color='gray', linestyle='-', linewidth=0.5)
     cpu_freq_ax.tick_params(axis='y', which='both', labelsize=7, labelcolor='blue')
+    cpu_freq_ax.tick_params(axis='x', which='both', labelsize=7)
     cpu_freq_ax.set_ylim(bottom=cpu_freqs[0], top=cpu_freqs[-1]*1.05)
     cpu_freq_ax.legend(loc="upper left",fontsize="small")
 
@@ -418,7 +422,8 @@ def main() :
     gpu_freq_ax.legend(loc="upper right",fontsize="small")
 
     #plt.savefig(args.out_plot_url)
-    plt.tight_layout()
+    plt.subplots_adjust(hspace=0.455, wspace=0.3)
+    #plt.tight_layout()
     plt.show()
     plt.close()
 
