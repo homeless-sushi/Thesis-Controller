@@ -61,10 +61,11 @@ namespace Policy
             pairPidApp.second->readTicks();
             long double requestedThroughput = pairPidApp.second->data->requested_throughput;
             struct ticks ticks = pairPidApp.second->getWindowTicks();
-            long double currThroughput = getWindowThroughput(ticks);
-            pairPidApp.second->currentThroughput = currThroughput;
+            pairPidApp.second->currentThroughput = getWindowThroughput(ticks);
             unsigned int minimumPrecison = pairPidApp.second->data->minimum_precision;
             unsigned int currPrecision = pairPidApp.second->data->curr_precision;
+            unsigned int useGpu = pairPidApp.second->data->use_gpu;
+            unsigned int nCores = pairPidApp.second->data->n_cpu_cores;
             pairPidApp.second->unlock();
             
             controllerLogFile << cycle << ","
@@ -74,8 +75,9 @@ namespace Policy
                 << pairPidApp.second->descriptor.input_size << ","
                 << requestedThroughput << ","
                 << pairPidApp.second->currentThroughput << ","
-                << minimumPrecison << ","
-                << currPrecision << std::endl;
+                << currPrecision << "," 
+                << useGpu << ","
+                << nCores << std::endl;
         }
 
         Frequency::CPU_FRQ currCpuFreq = Frequency::getCurrCpuFreq();
